@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using FunctionPipes.Abstractions;
 using FunctionPipes.Contexts;
+using FunctionPipes.Extensions.Queue;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 

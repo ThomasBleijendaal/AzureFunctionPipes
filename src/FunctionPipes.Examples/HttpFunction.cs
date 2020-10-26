@@ -2,6 +2,8 @@
 using System.Web.Http;
 using FunctionPipes.Abstractions;
 using FunctionPipes.Contexts;
+using FunctionPipes.Extensions;
+using FunctionPipes.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;

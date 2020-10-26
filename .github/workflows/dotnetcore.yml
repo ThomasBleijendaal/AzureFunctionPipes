@@ -1,0 +1,22 @@
+name: .NET Core
+
+on: 
+    push:
+        branches:
+        - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.100
+    - name: Build Core
+      run: dotnet build --configuration Release ./src/FunctionPipes/FunctionPipes.csproj
+    - name: Publish Web Api
+      run: dotnet nuget push ./src/FunctionPipes/bin/Release/*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate

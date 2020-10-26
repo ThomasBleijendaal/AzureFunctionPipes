@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using FunctionPipes.Abstractions;
 using FunctionPipes.Contexts;
+using FunctionPipes.Extensions.Timer;
 using Microsoft.Azure.WebJobs;
 
 namespace FunctionPipes.Examples
