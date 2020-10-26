@@ -16,7 +16,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.100
-    - name: Build Core
+    - name: Build Pipes
       run: dotnet build --configuration Release ./src/FunctionPipes/FunctionPipes.csproj
-    - name: Publish Web Api
+    - name: Publish Pipes
       run: dotnet nuget push ./src/FunctionPipes/bin/Release/*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
