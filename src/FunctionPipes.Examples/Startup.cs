@@ -1,6 +1,7 @@
 ﻿using FunctionPipes;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using static FunctionPipes.Examples.DurableFunction;
 using static FunctionPipes.Examples.HttpFunction;
 using static FunctionPipes.Examples.QueueFunction;
 using static FunctionPipes.Examples.TimerFunction;
@@ -25,6 +26,10 @@ namespace FunctionPipes
             // queue
             builder.Services.AddSingleton<MessageDeserializer>();
             builder.Services.AddSingleton<MessageValidator>();
+
+            // activity
+            builder.Services.AddSingleton<ActivityLogger>();
+            builder.Services.AddSingleton<DoSomething>();
         }
     }
 }

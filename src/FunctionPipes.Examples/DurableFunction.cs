@@ -24,16 +24,16 @@ namespace FunctionPipes.Examples
         }
 
         [FunctionName("DurableFunction")]
-        public async Task<List<ActivityModel>> RunOrchestrator(
+        public async Task<List<string>> RunOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context)
         {
-            var outputs = new List<ActivityModel>
+            var outputs = new List<string>
             {
 
                 // Replace "hello" with the name of your Durable Activity Function.
-                await context.CallActivityAsync<ActivityModel>("DurableFunction_Hello", new ActivityModel { Name = "Tokyo" }),
-                await context.CallActivityAsync<ActivityModel>("DurableFunction_Hello", new ActivityModel { Name = "Seattle" }),
-                await context.CallActivityAsync<ActivityModel>("DurableFunction_Hello", new ActivityModel { Name = "London" })
+                await context.CallActivityAsync<string>("DurableFunction_Hello", new ActivityModel { Name = "Tokyo" }),
+                await context.CallActivityAsync<string>("DurableFunction_Hello", new ActivityModel { Name = "Seattle" }),
+                await context.CallActivityAsync<string>("DurableFunction_Hello", new ActivityModel { Name = "London" })
             };
 
             // returns ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
