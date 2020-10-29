@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using FunctionPipes.Abstractions;
+using FunctionPipes.Abstractions.Elements;
+using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
 
 namespace FunctionPipes.Elements
 {
-    public class StartElement<TContext, TInput, TReturn> : IPipeElement<TContext, TInput, TReturn>, IStartElement
+    internal class StartElement<TContext, TInput, TReturn> : IPipeElement<TContext, TInput, TReturn>, IStartElement
         where TContext : PipeContext
     {
         public StartElement(

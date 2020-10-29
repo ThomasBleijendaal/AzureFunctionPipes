@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-using FunctionPipes.Abstractions;
+using FunctionPipes.Abstractions.Elements;
+using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
 using FunctionPipes.Elements;
 using Microsoft.AspNetCore.Http;
@@ -11,9 +13,10 @@ namespace FunctionPipes.Extensions.Activity
     {
         public static IPipeElement<PipeContext, TInput, TReturn> StartWith<TInput, TReturn>(
             this TInput input,
+            IServiceProvider serviceProvider,
             IActivityStepProvider<TInput, TReturn> provider)
         {
-            var context = new PipeContext();
+            var context = new PipeContext(serviceProvider);
 
             return new StartElement<PipeContext, TInput, TReturn>(context, input, provider);
         }

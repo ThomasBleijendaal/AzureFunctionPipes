@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using FunctionPipes.Abstractions.Providers;
 
-namespace FunctionPipes.Abstractions
+namespace FunctionPipes.Abstractions.Elements
 {
     public interface IPipeElement
     {

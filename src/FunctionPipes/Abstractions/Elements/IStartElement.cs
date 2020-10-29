@@ -1,6 +1,6 @@
 ﻿using FunctionPipes.Contexts;
 
-namespace FunctionPipes.Abstractions
+namespace FunctionPipes.Abstractions.Elements
 {
     public interface IStartElement
     {

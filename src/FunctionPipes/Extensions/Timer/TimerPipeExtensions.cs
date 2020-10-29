@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-using FunctionPipes.Abstractions;
+using FunctionPipes.Abstractions.Elements;
+using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
 using FunctionPipes.Elements;
 using Microsoft.AspNetCore.Http;
@@ -12,9 +14,10 @@ namespace FunctionPipes.Extensions.Timer
     {
         public static IPipeElement<TimerPipeContext, TimerInfo, TReturn> StartWith<TReturn>(
             this TimerInfo timer,
+            IServiceProvider serviceProvider,
             ITimerStepProvider<TimerInfo, TReturn> provider)
         {
-            var context = new TimerPipeContext(timer);
+            var context = new TimerPipeContext(serviceProvider, timer);
 
             return new StartElement<TimerPipeContext, TimerInfo, TReturn>(context, timer, provider);
         }
@@ -23,7 +26,7 @@ namespace FunctionPipes.Extensions.Timer
             this IPipeElement<TimerPipeContext, TInput, TInputForNextStep> element,
             ITimerFinalStepProvider<TInputForNextStep> provider)
         {
-            var finalStep = new FinalElement<TimerPipeContext, TInputForNextStep>(
+            var finalStep = new FinalElement<TimerPipeContext, TInputForNextStep, bool>(
                 element.Context, element.PreviousElements.Append(element), provider);
 
             await finalStep.ResolveAsync();

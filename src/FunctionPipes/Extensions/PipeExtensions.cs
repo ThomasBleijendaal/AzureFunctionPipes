@@ -1,5 +1,6 @@
 ﻿using System.Linq;
-using FunctionPipes.Abstractions;
+using FunctionPipes.Abstractions.Elements;
+using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Elements;
 using Microsoft.AspNetCore.Http;
 

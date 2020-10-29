@@ -1,8 +1,12 @@
-﻿namespace FunctionPipes.Contexts
+﻿using System;
+
+namespace FunctionPipes.Contexts
 {
     public sealed class QueuePipeContext : PipeContext
     {
-        public QueuePipeContext(string message)
+        public QueuePipeContext(
+            IServiceProvider serviceProvider, 
+            string message) : base(serviceProvider)
         {
             Message = message;
         }

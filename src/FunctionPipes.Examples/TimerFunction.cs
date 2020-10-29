@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using FunctionPipes.Abstractions;
+using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
 using FunctionPipes.Extensions.Timer;
 using Microsoft.Azure.WebJobs;
@@ -9,13 +9,16 @@ namespace FunctionPipes.Examples
 {
     public class TimerFunction
     {
+        private readonly IServiceProvider _serviceProvider;
         private readonly LogTime _logTime;
         private readonly WaitSomeTime _waitSomeTime;
 
         public TimerFunction(
+            IServiceProvider serviceProvider,
             LogTime logTime,
             WaitSomeTime waitSomeTime)
         {
+            _serviceProvider = serviceProvider;
             _logTime = logTime;
             _waitSomeTime = waitSomeTime;
         }
@@ -24,7 +27,7 @@ namespace FunctionPipes.Examples
         public async Task Run([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer)
         {
             await myTimer
-                .StartWith(_logTime)
+                .StartWith(_serviceProvider, _logTime)
                 .CompleteWithAsync(_waitSomeTime);
         }
 
@@ -47,9 +50,11 @@ namespace FunctionPipes.Examples
 
         public class WaitSomeTime : ITimerFinalStepProvider<TimerData>
         {
-            public async Task FinalizeAsync(TimerPipeContext context, TimerData? input)
+            public async Task<bool> FinalizeAsync(TimerPipeContext context, TimerData? input)
             {
                 await Task.Delay(5000);
+
+                return true;
             }
         }
     }

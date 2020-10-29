@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
-using FunctionPipes.Abstractions;
+using FunctionPipes.Abstractions.Elements;
+using FunctionPipes.Abstractions.Providers;
 
 namespace FunctionPipes.Elements
 {
-    public class Element<TContext, TInput, TReturn> : IPipeElement<TContext, TInput, TReturn>
+    internal class Element<TContext, TInput, TReturn> : IPipeElement<TContext, TInput, TReturn>
     {
         public Element(
             TContext context,

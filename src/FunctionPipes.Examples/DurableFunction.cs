@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FunctionPipes.Abstractions;
+using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
 using FunctionPipes.Extensions.Activity;
 using Microsoft.Azure.WebJobs;
@@ -12,13 +12,16 @@ namespace FunctionPipes.Examples
 {
     public class DurableFunction
     {
+        private readonly IServiceProvider _serviceProvider;
         private readonly ActivityLogger _activityLogger;
         private readonly DoSomething _doSomething;
 
         public DurableFunction(
+            IServiceProvider serviceProvider,
             ActivityLogger activityLogger,
             DoSomething doSomething)
         {
+            _serviceProvider = serviceProvider;
             _activityLogger = activityLogger;
             _doSomething = doSomething;
         }
@@ -44,7 +47,7 @@ namespace FunctionPipes.Examples
         public async Task<string> SayHello([ActivityTrigger] ActivityModel request, ILogger log)
         {
             return await request
-                .StartWith(_activityLogger)
+                .StartWith(_serviceProvider, _activityLogger)
                 .CompleteWithAsync(_doSomething);
         }
 

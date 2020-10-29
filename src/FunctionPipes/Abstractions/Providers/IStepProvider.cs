@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace FunctionPipes.Abstractions
+namespace FunctionPipes.Abstractions.Providers
 {
     // TODO: sync versions?
     public interface IStepProvider

@@ -1,6 +1,6 @@
 ﻿using FunctionPipes.Contexts;
 
-namespace FunctionPipes.Abstractions
+namespace FunctionPipes.Abstractions.Providers
 {
     public interface IHttpFinalStepProvider<TInput, TReturn> : IFinalStepProvider<HttpPipeContext, TInput, TReturn>
     {

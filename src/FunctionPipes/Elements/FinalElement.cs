@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FunctionPipes.Abstractions;
+using FunctionPipes.Abstractions.Elements;
+using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FunctionPipes.Elements
 {
-    // TODO: remove this duplication
-    public class FinalElement<TContext, TInput, TReturn>
+    internal class FinalElement<TContext, TInput, TReturn>
         where TContext : PipeContext
     {
         public FinalElement(
@@ -32,11 +34,24 @@ namespace FunctionPipes.Elements
             var input = firstElement.Input;
             var context = firstElement.Context;
 
+            var cache = default(IMemoryCache);
+
             foreach (var element in PreviousElements)
             {
                 try
                 {
                     var output = await element.GenericProvider.InternalDoAsync(context, input).ConfigureAwait(false);
+
+                    if (context.EnableCache && context.CacheFromThisStep && context.CacheKey != null)
+                    {
+                        context.CacheFromThisStep = false;
+
+                        cache ??= context.ServiceProvider.GetRequiredService<IMemoryCache>();
+                        if (cache.TryGetValue<TReturn>(context.CacheKey, out var cachedReturn))
+                        {
+                            return cachedReturn;
+                        }
+                    }
 
                     input = output;
                 }
@@ -48,51 +63,13 @@ namespace FunctionPipes.Elements
                 }
             }
 
-            return await Provider.FinalizeAsync(Context, (TInput)input).ConfigureAwait(false);
-        }
-    }
-
-    public class FinalElement<TContext, TInput>
-        where TContext : PipeContext
-    {
-        public FinalElement(
-            TContext context,
-            IEnumerable<IPipeElement> previousElements,
-            IFinalStepProvider<TContext, TInput> provider)
-        {
-            Context = context;
-            PreviousElements = previousElements;
-            Provider = provider;
-        }
-
-        public TContext Context { get; }
-        public IEnumerable<IPipeElement> PreviousElements { get; }
-        public IFinalStepProvider<TContext, TInput> Provider { get; }
-
-        public async Task ResolveAsync()
-        {
-            var firstElement = (IStartElement)PreviousElements.First();
-
-            var input = firstElement.Input;
-            var context = firstElement.Context;
-
-            foreach (var element in PreviousElements)
+            var result = await Provider.FinalizeAsync(Context, (TInput)input).ConfigureAwait(false);
+            if (context.EnableCache && context.CacheKey != null && cache != null)
             {
-                try
-                {
-                    var output = await element.GenericProvider.InternalDoAsync(context, input).ConfigureAwait(false);
-
-                    input = output;
-                }
-                catch (Exception ex)
-                {
-                    Context.ThrownException = ex;
-
-                    await Provider.FinalizeAsync(Context, default).ConfigureAwait(false);
-                }
+                cache.Set(context.CacheKey, result, context.CacheLifeTime ?? new TimeSpan(0, 5, 0));
             }
 
-            await Provider.FinalizeAsync(Context, (TInput)input).ConfigureAwait(false);
+            return result;
         }
     }
 }

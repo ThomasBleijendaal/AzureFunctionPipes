@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using FunctionPipes.Abstractions;
+using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
 using FunctionPipes.Extensions.Queue;
 using Microsoft.Azure.WebJobs;
@@ -10,22 +10,25 @@ namespace FunctionPipes.Examples
 {
     public class QueueFunction
     {
+        private readonly IServiceProvider _serviceProvider;
         private readonly MessageDeserializer _messageDeserializer;
         private readonly MessageValidator _messageValidator;
 
         public QueueFunction(
+            IServiceProvider serviceProvider,
             MessageDeserializer messageDeserializer,
             MessageValidator messageValidator)
         {
+            _serviceProvider = serviceProvider;
             _messageDeserializer = messageDeserializer;
             _messageValidator = messageValidator;
         }
 
         [FunctionName("QueueFunction")]
-        public async Task Run([QueueTrigger("myqueue-items", Connection = "")]string myQueueItem)
+        public async Task Run([QueueTrigger("myqueue-items")]string myQueueItem)
         {
             await myQueueItem
-                .StartWith(_messageDeserializer)
+                .StartWith(_serviceProvider, _messageDeserializer)
                 .CompleteWithAsync(_messageValidator);
         }
 
@@ -44,7 +47,7 @@ namespace FunctionPipes.Examples
 
         public class MessageValidator : IQueueFinalStepProvider<QueueMessage>
         {
-            public Task FinalizeAsync(QueuePipeContext context, QueueMessage? input)
+            public Task<bool> FinalizeAsync(QueuePipeContext context, QueueMessage? input)
             {
                 if (context.ThrownException != null)
                 {
@@ -61,7 +64,7 @@ namespace FunctionPipes.Examples
                     throw new Exception();
                 }
 
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
         }
     }
