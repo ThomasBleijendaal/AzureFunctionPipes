@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using FunctionPipes.Abstractions;
 using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
-using FunctionPipes.Extensions.Queue;
+using FunctionPipes.Extensions;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 
@@ -10,25 +11,26 @@ namespace FunctionPipes.Examples
 {
     public class QueueFunction
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IPipe _pipe;
         private readonly MessageDeserializer _messageDeserializer;
         private readonly MessageValidator _messageValidator;
 
         public QueueFunction(
-            IServiceProvider serviceProvider,
+            IPipe pipe,
             MessageDeserializer messageDeserializer,
             MessageValidator messageValidator)
         {
-            _serviceProvider = serviceProvider;
+            _pipe = pipe;
             _messageDeserializer = messageDeserializer;
             _messageValidator = messageValidator;
         }
 
+        [Disable]
         [FunctionName("QueueFunction")]
         public async Task Run([QueueTrigger("myqueue-items")]string myQueueItem)
         {
-            await myQueueItem
-                .StartWith(_serviceProvider, _messageDeserializer)
+            await _pipe
+                .StartWithQueueMessage(myQueueItem, _messageDeserializer)
                 .CompleteWithAsync(_messageValidator);
         }
 

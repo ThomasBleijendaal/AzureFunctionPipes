@@ -27,7 +27,7 @@ namespace FunctionPipes.Elements
         public IEnumerable<IPipeElement> PreviousElements { get; }
         public IFinalStepProvider<TContext, TInput, TReturn> Provider { get; }
 
-        public async Task<TReturn> ResolveAsync()
+        public async Task<TReturn> CompletePipeAsync()
         {
             var firstElement = (IStartElement)PreviousElements.First();
 

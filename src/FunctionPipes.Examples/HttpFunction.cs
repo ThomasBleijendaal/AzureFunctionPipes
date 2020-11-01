@@ -1,10 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Web.Http;
+using FunctionPipes.Abstractions;
 using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
 using FunctionPipes.Extensions;
-using FunctionPipes.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -15,35 +14,28 @@ namespace FunctionPipes.Examples
 {
     public class HttpFunction
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly Authenicate _authenicate;
-        private readonly SerializeBodyTo<ExampleBody> _serializeBodyToExampleBody;
-        private readonly CallToExternalService<ExampleBody, ExampleResult> _callToExternalService;
-        private readonly ReturnResult _returnResult;
+        private readonly IPipe _pipe;
 
-        public HttpFunction(
-            IServiceProvider serviceProvider,
-            Authenicate authenicate,
-            SerializeBodyTo<ExampleBody> serializeBodyToExampleBody,
-            CallToExternalService<ExampleBody, ExampleResult> callToExternalService,
-            ReturnResult returnResult)
+        public HttpFunction(IPipe pipe)
         {
-            _serviceProvider = serviceProvider;
-            _authenicate = authenicate;
-            _serializeBodyToExampleBody = serializeBodyToExampleBody;
-            _callToExternalService = callToExternalService;
-            _returnResult = returnResult;
+            _pipe = pipe;
         }
 
         [FunctionName("HttpFunction")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
-            return await req
-                .StartWith(_serviceProvider, _authenicate)
-                .DoNext(_serializeBodyToExampleBody)
-                .DoNext(_callToExternalService)
-                .CompleteWithAsync(_returnResult);
+            return await _pipe
+                .StartWithHttpRequest<HttpRequest, Authenticate>(req)
+                .DoNext<ExampleBody, SerializeBodyTo<ExampleBody>>()
+                .DoNext<ExampleResult, CallToExternalService<ExampleBody, ExampleResult>>()
+                .DoNext(async (context, input) =>
+                {
+                    await Task.Delay(1000);
+
+                    return input;
+                })
+                .CompleteWithAsync<IActionResult, ReturnResult>();
         }
 
         public class ExampleBody
@@ -56,7 +48,7 @@ namespace FunctionPipes.Examples
             public string ConvertedContent { get; set; } = default!;
         }
 
-        public class Authenicate : IHttpStepProvider<HttpRequest, HttpRequest>
+        public class Authenticate : IHttpStepProvider<HttpRequest, HttpRequest>
         {
             public Task<HttpRequest> DoAsync(HttpPipeContext context, HttpRequest input)
             {

@@ -13,8 +13,10 @@ namespace FunctionPipes
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            builder.Services.AddFunctionPipes();
+
             // http
-            builder.Services.AddSingleton<Authenicate>();
+            builder.Services.AddSingleton<Authenticate>();
             builder.Services.AddSingleton<SerializeBodyTo<ExampleBody>>();
             builder.Services.AddSingleton<CallToExternalService<ExampleBody, ExampleResult>>();
             builder.Services.AddSingleton<ReturnResult>();

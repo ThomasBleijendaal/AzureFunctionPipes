@@ -1,33 +1,35 @@
 ﻿using System;
 using System.Threading.Tasks;
+using FunctionPipes.Abstractions;
 using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
-using FunctionPipes.Extensions.Timer;
+using FunctionPipes.Extensions;
 using Microsoft.Azure.WebJobs;
 
 namespace FunctionPipes.Examples
 {
     public class TimerFunction
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IPipe _pipe;
         private readonly LogTime _logTime;
         private readonly WaitSomeTime _waitSomeTime;
 
         public TimerFunction(
-            IServiceProvider serviceProvider,
+            IPipe pipe,
             LogTime logTime,
             WaitSomeTime waitSomeTime)
         {
-            _serviceProvider = serviceProvider;
+            _pipe = pipe;
             _logTime = logTime;
             _waitSomeTime = waitSomeTime;
         }
 
+        [Disable]
         [FunctionName("TimerFunction")]
         public async Task Run([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer)
         {
-            await myTimer
-                .StartWith(_serviceProvider, _logTime)
+            await _pipe
+                .StartWithTimer(myTimer, _logTime)
                 .CompleteWithAsync(_waitSomeTime);
         }
 
