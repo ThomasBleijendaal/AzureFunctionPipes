@@ -21,7 +21,16 @@ namespace FunctionPipes
 
         public IPipeElement<HttpPipeContext, HttpRequest, TReturn> StartWithHttpRequest<TReturn>(
             HttpRequest httpRequest,
-            IHttpStepProvider<HttpRequest, TReturn> provider)
+            IAsyncHttpStepProvider<HttpRequest, TReturn> provider)
+        {
+            var context = new HttpPipeContext(_serviceProvider, httpRequest);
+
+            return new StartElement<HttpPipeContext, HttpRequest, TReturn>(context, httpRequest, provider);
+        }
+
+        public IPipeElement<HttpPipeContext, HttpRequest, TReturn> StartWithHttpRequest<TReturn>(
+            HttpRequest httpRequest,
+            ISyncHttpStepProvider<HttpRequest, TReturn> provider)
         {
             var context = new HttpPipeContext(_serviceProvider, httpRequest);
 
@@ -30,19 +39,26 @@ namespace FunctionPipes
 
         public IPipeElement<HttpPipeContext, HttpRequest, TReturn> StartWithHttpRequest<TReturn, TStepProvider>(
             HttpRequest httpRequest)
-            where TStepProvider : IStepProvider<HttpPipeContext, HttpRequest, TReturn>
         {
             var context = new HttpPipeContext(_serviceProvider, httpRequest);
 
-            return new StartElement<HttpPipeContext, HttpRequest, TReturn>(
-                context, 
-                httpRequest, 
-                _serviceProvider.GetRequiredService<TStepProvider>());
+            var provider = _serviceProvider.GetRequiredService<TStepProvider>();
+
+            return StartElement<HttpPipeContext, HttpRequest, TReturn>.Create(context, httpRequest, provider);
         }
 
         public IPipeElement<PipeContext, TInput, TReturn> StartWithActivity<TInput, TReturn>(
             TInput input,
-            IActivityStepProvider<TInput, TReturn> provider)
+            IAsyncActivityStepProvider<TInput, TReturn> provider)
+        {
+            var context = new PipeContext(_serviceProvider);
+
+            return new StartElement<PipeContext, TInput, TReturn>(context, input, provider);
+        }
+
+        public IPipeElement<PipeContext, TInput, TReturn> StartWithActivity<TInput, TReturn>(
+            TInput input,
+            ISyncActivityStepProvider<TInput, TReturn> provider)
         {
             var context = new PipeContext(_serviceProvider);
 
@@ -51,19 +67,26 @@ namespace FunctionPipes
 
         public IPipeElement<PipeContext, TInput, TReturn> StartWithActivity<TInput, TReturn, TStepProvider>(
             TInput input)
-            where TStepProvider : IStepProvider<PipeContext, TInput, TReturn>
         {
             var context = new PipeContext(_serviceProvider);
 
-            return new StartElement<PipeContext, TInput, TReturn>(
-                context,
-                input,
-                _serviceProvider.GetRequiredService<TStepProvider>());
+            var provider = _serviceProvider.GetRequiredService<TStepProvider>();
+
+            return StartElement<PipeContext, TInput, TReturn>.Create(context, input, provider);
         }
 
         public IPipeElement<QueuePipeContext, string, TReturn> StartWithQueueMessage<TReturn>(
             string queueMessage,
-            IQueueStepProvider<string, TReturn> provider)
+            IAsyncQueueStepProvider<string, TReturn> provider)
+        {
+            var context = new QueuePipeContext(_serviceProvider, queueMessage);
+
+            return new StartElement<QueuePipeContext, string, TReturn>(context, queueMessage, provider);
+        }
+
+        public IPipeElement<QueuePipeContext, string, TReturn> StartWithQueueMessage<TReturn>(
+            string queueMessage,
+            ISyncQueueStepProvider<string, TReturn> provider)
         {
             var context = new QueuePipeContext(_serviceProvider, queueMessage);
 
@@ -72,19 +95,26 @@ namespace FunctionPipes
 
         public IPipeElement<QueuePipeContext, string, TReturn> StartWithQueueMessage<TReturn, TStepProvider>(
             string queueMessage)
-            where TStepProvider : IStepProvider<QueuePipeContext, string, TReturn>
         {
             var context = new QueuePipeContext(_serviceProvider, queueMessage);
 
-            return new StartElement<QueuePipeContext, string, TReturn>(
-                context,
-                queueMessage,
-                _serviceProvider.GetRequiredService<TStepProvider>());
+            var provider = _serviceProvider.GetRequiredService<TStepProvider>();
+
+            return StartElement<QueuePipeContext, string, TReturn>.Create(context, queueMessage, provider);
         }
 
         public IPipeElement<TimerPipeContext, TimerInfo, TReturn> StartWithTimer<TReturn>(
             TimerInfo timer,
-            ITimerStepProvider<TimerInfo, TReturn> provider)
+            IAsyncTimerStepProvider<TimerInfo, TReturn> provider)
+        {
+            var context = new TimerPipeContext(_serviceProvider, timer);
+
+            return new StartElement<TimerPipeContext, TimerInfo, TReturn>(context, timer, provider);
+        }
+
+        public IPipeElement<TimerPipeContext, TimerInfo, TReturn> StartWithTimer<TReturn>(
+            TimerInfo timer,
+            ISyncTimerStepProvider<TimerInfo, TReturn> provider)
         {
             var context = new TimerPipeContext(_serviceProvider, timer);
 
@@ -93,14 +123,12 @@ namespace FunctionPipes
 
         public IPipeElement<TimerPipeContext, TimerInfo, TReturn> StartWithTimer<TReturn, TStepProvider>(
             TimerInfo timer)
-            where TStepProvider : IStepProvider<TimerPipeContext, TimerInfo, TReturn>
         {
             var context = new TimerPipeContext(_serviceProvider, timer);
 
-            return new StartElement<TimerPipeContext, TimerInfo, TReturn>(
-                context,
-                timer,
-                _serviceProvider.GetRequiredService<TStepProvider>());
+            var provider = _serviceProvider.GetRequiredService<TStepProvider>();
+
+            return StartElement<TimerPipeContext, TimerInfo, TReturn>.Create(context, timer, provider);
         }
     }
 }

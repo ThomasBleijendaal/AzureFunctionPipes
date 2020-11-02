@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using FunctionPipes.Abstractions;
 using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
-using FunctionPipes.Extensions;
 using Microsoft.Azure.WebJobs;
 
 namespace FunctionPipes.Examples
@@ -11,16 +10,19 @@ namespace FunctionPipes.Examples
     public class TimerFunction
     {
         private readonly IPipe _pipe;
-        private readonly LogTime _logTime;
+        private readonly AsyncLogTime _asyncLogTime;
+        private readonly SyncLogTime _syncLogTime;
         private readonly WaitSomeTime _waitSomeTime;
 
         public TimerFunction(
             IPipe pipe,
-            LogTime logTime,
+            AsyncLogTime asyncLogTime,
+            SyncLogTime syncLogTime,
             WaitSomeTime waitSomeTime)
         {
             _pipe = pipe;
-            _logTime = logTime;
+            _asyncLogTime = asyncLogTime;
+            _syncLogTime = syncLogTime;
             _waitSomeTime = waitSomeTime;
         }
 
@@ -29,7 +31,9 @@ namespace FunctionPipes.Examples
         public async Task Run([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer)
         {
             await _pipe
-                .StartWithTimer(myTimer, _logTime)
+                .StartWithTimer(myTimer, _syncLogTime)
+                .DoNext(_asyncLogTime)
+                .DoNext((context, input) => new TimerData { Now = DateTime.UtcNow })
                 .CompleteWithAsync(_waitSomeTime);
         }
 
@@ -38,21 +42,31 @@ namespace FunctionPipes.Examples
             public DateTime Now { get; set; }
         }
 
-        public class LogTime : ITimerStepProvider<TimerInfo, TimerData>
+        public class AsyncLogTime : IAsyncTimerStepProvider<TimerInfo, TimerInfo>
         {
-            public async Task<TimerData> DoAsync(TimerPipeContext context, TimerInfo input)
+            public async Task<TimerInfo> DoAsync(TimerPipeContext context, TimerInfo input)
             {
                 var now = DateTime.UtcNow;
 
-                await Task.Delay(5000);
+                await Task.Delay(1000);
 
-                return new TimerData { Now = now };
+                return input;
             }
         }
 
-        public class WaitSomeTime : ITimerFinalStepProvider<TimerData>
+        public class SyncLogTime : ISyncTimerStepProvider<TimerInfo, TimerInfo>
         {
-            public async Task<bool> FinalizeAsync(TimerPipeContext context, TimerData? input)
+            public TimerInfo Do(TimerPipeContext context, TimerInfo input)
+            {
+                var now = DateTime.UtcNow;
+
+                return input;
+            }
+        }
+
+        public class WaitSomeTime : IAsyncTimerStepProvider<TimerData?, bool>
+        {
+            public async Task<bool> DoAsync(TimerPipeContext context, TimerData? input)
             {
                 await Task.Delay(5000);
 

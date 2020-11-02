@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using FunctionPipes.Abstractions;
 using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
-using FunctionPipes.Extensions;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
@@ -69,19 +68,19 @@ namespace FunctionPipes.Examples
             public string Name { get; set; } = default!;
         }
 
-        public class ActivityLogger : IActivityStepProvider<ActivityModel, string>
+        public class ActivityLogger : ISyncActivityStepProvider<ActivityModel, string>
         {
-            public Task<string> DoAsync(PipeContext context, ActivityModel input)
+            public string Do(PipeContext context, ActivityModel input)
             {
                 Console.WriteLine(input.Name);
 
-                return Task.FromResult(input.Name);
+                return input.Name;
             }
         }
 
-        public class DoSomething : IActivityFinalStepProvider<string, string>
+        public class DoSomething : IAsyncActivityStepProvider<string?, string>
         {
-            public Task<string> FinalizeAsync(PipeContext context, string? input)
+            public Task<string> DoAsync(PipeContext context, string? input)
             {
                 if (context.ThrownException != null)
                 {

@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using FunctionPipes.Abstractions;
 using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
-using FunctionPipes.Extensions;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 
@@ -39,7 +38,7 @@ namespace FunctionPipes.Examples
             public string Message { get; set; } = default!;
         }
 
-        public class MessageDeserializer : IQueueStepProvider<string, QueueMessage>
+        public class MessageDeserializer : IAsyncQueueStepProvider<string, QueueMessage>
         {
             public Task<QueueMessage> DoAsync(QueuePipeContext context, string input)
             {
@@ -47,9 +46,9 @@ namespace FunctionPipes.Examples
             }
         }
 
-        public class MessageValidator : IQueueFinalStepProvider<QueueMessage>
+        public class MessageValidator : IAsyncQueueStepProvider<QueueMessage?, bool>
         {
-            public Task<bool> FinalizeAsync(QueuePipeContext context, QueueMessage? input)
+            public Task<bool> DoAsync(QueuePipeContext context, QueueMessage? input)
             {
                 if (context.ThrownException != null)
                 {

@@ -4,11 +4,11 @@ using FunctionPipes.Abstractions.Providers;
 
 namespace FunctionPipes.Providers
 {
-    internal class LambdaStepProvider<TContext, TInput, TReturn> : IStepProvider<TContext, TInput, TReturn>
+    internal class AsyncLambdaStepProvider<TContext, TInput, TReturn> : IAsyncStepProvider<TContext, TInput, TReturn>
     {
         private readonly Func<TContext, TInput, Task<TReturn>> _lambda;
 
-        public LambdaStepProvider(Func<TContext, TInput, Task<TReturn>> lambda)
+        public AsyncLambdaStepProvider(Func<TContext, TInput, Task<TReturn>> lambda)
         {
             _lambda = lambda;
         }

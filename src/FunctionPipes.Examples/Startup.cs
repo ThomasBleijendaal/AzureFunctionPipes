@@ -22,7 +22,8 @@ namespace FunctionPipes
             builder.Services.AddSingleton<ReturnResult>();
 
             // timer
-            builder.Services.AddSingleton<LogTime>();
+            builder.Services.AddSingleton<AsyncLogTime>();
+            builder.Services.AddSingleton<SyncLogTime>();
             builder.Services.AddSingleton<WaitSomeTime>();
 
             // queue

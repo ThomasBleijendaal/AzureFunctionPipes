@@ -7,7 +7,9 @@ namespace FunctionPipes.Abstractions.Elements
 {
     public interface IPipeElement
     {
-        IStepProvider GenericProvider { get; }
+        IAsyncStepProvider? GenericAsyncProvider { get; }
+
+        ISyncStepProvider? GenericSyncProvider { get; }
 
         PipeContext GenericContext { get; }
 
@@ -18,15 +20,21 @@ namespace FunctionPipes.Abstractions.Elements
         where TContext : PipeContext
     {
         TContext Context { get; }
-        IStepProvider<TContext, TInput, TReturn> Provider { get; }
+        IAsyncStepProvider<TContext, TInput, TReturn>? AsyncProvider { get; }
 
-        IPipeElement<TContext, TReturn, TReturnOfNextStep> DoNext<TReturnOfNextStep, TStepProvider>()
-            where TStepProvider : IStepProvider<TContext, TReturn, TReturnOfNextStep>;
+        ISyncStepProvider<TContext, TInput, TReturn>? SyncProvider { get; }
+
+        IPipeElement<TContext, TReturn, TReturnOfNextStep> DoNext<TReturnOfNextStep, TStepProvider>();
 
         Task<TReturnOfNextStep> CompleteWithAsync<TReturnOfNextStep, TFinalStepProvider>()
-            where TFinalStepProvider : IFinalStepProvider<TContext, TReturn, TReturnOfNextStep>;
+            where TFinalStepProvider : IAsyncStepProvider<TContext, TReturn?, TReturnOfNextStep>;
 
-        IStepProvider IPipeElement.GenericProvider => Provider;
+        Task<TReturnOfNextStep> CompleteWith<TReturnOfNextStep, TFinalStepProvider>()
+            where TFinalStepProvider : ISyncStepProvider<TContext, TReturn?, TReturnOfNextStep>;
+
+        IAsyncStepProvider? IPipeElement.GenericAsyncProvider => AsyncProvider;
+        ISyncStepProvider? IPipeElement.GenericSyncProvider => SyncProvider;
+
         PipeContext IPipeElement.GenericContext => Context;
     }
 }

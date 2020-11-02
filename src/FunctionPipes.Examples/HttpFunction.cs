@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Web.Http;
 using FunctionPipes.Abstractions;
 using FunctionPipes.Abstractions.Providers;
 using FunctionPipes.Contexts;
-using FunctionPipes.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -48,15 +48,17 @@ namespace FunctionPipes.Examples
             public string ConvertedContent { get; set; } = default!;
         }
 
-        public class Authenticate : IHttpStepProvider<HttpRequest, HttpRequest>
+        public class Authenticate : ISyncHttpStepProvider<HttpRequest, HttpRequest>
         {
-            public Task<HttpRequest> DoAsync(HttpPipeContext context, HttpRequest input)
+            public HttpRequest Do(HttpPipeContext context, HttpRequest input)
             {
-                return Task.FromResult(input);
+                Console.WriteLine("AUTHENTICATE");
+
+                return input;
             }
         }
 
-        public class SerializeBodyTo<TModel> : IHttpStepProvider<HttpRequest, TModel>
+        public class SerializeBodyTo<TModel> : IAsyncHttpStepProvider<HttpRequest, TModel>
             where TModel : class, new()
         {
             public async Task<TModel> DoAsync(HttpPipeContext context, HttpRequest input)
@@ -69,18 +71,18 @@ namespace FunctionPipes.Examples
             }
         }
 
-        public class CallToExternalService<TInputModel, TResultModel> : IHttpStepProvider<TInputModel, TResultModel>
+        public class CallToExternalService<TInputModel, TResultModel> : ISyncHttpStepProvider<TInputModel, TResultModel>
             where TResultModel : class, new()
         {
-            public Task<TResultModel> DoAsync(HttpPipeContext context, TInputModel input)
+            public TResultModel Do(HttpPipeContext context, TInputModel input)
             {
-                return Task.FromResult(JsonConvert.DeserializeObject<TResultModel>(JsonConvert.SerializeObject(input)));
+                return JsonConvert.DeserializeObject<TResultModel>(JsonConvert.SerializeObject(input));
             }
         }
 
-        public class ReturnResult : IHttpFinalStepProvider<ExampleResult, IActionResult>
+        public class ReturnResult : IAsyncHttpStepProvider<ExampleResult?, IActionResult>
         {
-            public Task<IActionResult> FinalizeAsync(HttpPipeContext context, ExampleResult? input)
+            public Task<IActionResult> DoAsync(HttpPipeContext context, ExampleResult? input)
             {
                 if (input == null)
                 {
